@@ -1,0 +1,8 @@
+name = RESS templating handler 
+description = Adaptive Design for Drupal & RESS
+core = 7.x
+dependencies[] = wurfl
+
+package = Mobile
+
+files[] = wurfl

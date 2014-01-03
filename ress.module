@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * RESS Drupal Template Preprocessor
+ * Some template sizes to consider are: 320px, 480px, 600px, 768px, 900px, 1100px, 1300px 
+ */
+
+
+// @see http://drupal.stackexchange.com/questions/2776/adding-a-theme-suggestion-programatically
+function ress_preprocess_page(&$variables){
+	//print_r(theme_get_suggestions(arg(), 'page'));
+	//print_r($variables['theme_hook_suggestions']);
+}
+
+function ress_theme_registry_alter(&$theme_registry) {
+	if (isset($theme_registry['field'])) {
+		$theme_registry['field']['template'] = 'field-480';    	
+	}
+}
+
+
+
+class Ress {
+	
+	//var $wurlf;
+	var $deviceWidth;
+
+	function __construct(){
+		wurfl_boot();
+		//$this->wurlf = $wurflManager;
+		$requestingDevice = wurfl_get_requestingDevice();
+		
+		$this->deviceWidth = $requestingDevice->getCapability("resolution_width");
+		
+		//$this->getTheme();
+
+		//die($this->deviceWidth);
+	}
+
+
+
+	function getTheme(){
+		global $theme_key;
+		$themes = list_themes();
+		$theme_object = $themes[$theme_key];
+		// print all the object fields
+		var_dump($theme_key);
+		var_dump($theme_object);
+	}
+
+}
+
+
+// initialize ressHandler
+$ressHandler = new Ress();
+
+?>
