@@ -6,52 +6,94 @@
  */
 
 
-// @see http://drupal.stackexchange.com/questions/2776/adding-a-theme-suggestion-programatically
-function ress_preprocess_page(&$variables){
-	//print_r(theme_get_suggestions(arg(), 'page'));
-	//print_r($variables['theme_hook_suggestions']);
+/**
+ * Admin Config
+ */
+function ress_admin() {
+ 	$form = array();
+	$form['ress_settings']['default_sizes'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Dafault sizes to check for:'),
+		'#required' => true,
+		'#description' => t('A comma separated list of sizes in px e.g., "320, 480"'),
+		'#default_value' => '320, 480, 600, 768, 900, 1100, 1300'
+	);
+	return system_settings_form($form);
 }
 
+/**
+ * Create configure link to set up 
+ */
+function ress_menu() {
+
+  $items = array();
+
+  $items['admin/config/system/ress'] = array(
+      'title' => 'RESS Template Preprocessor',
+      'description' => 'Default Size Settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('ress_admin'),
+      'access arguments' => array('administrator'),
+      'type' => MENU_NORMAL_ITEM,
+  );
+  
+  return $items;
+}
+
+function checkAndSet(&$themeRegistryNode, $width){
+	
+	$p = $themeRegistryNode['path'] . '/' . $themeRegistryNode['template'] . '-' . $width . '.tpl.php';
+	//$p = $theme_registry['field']["path"] . "/" . $theme_registry['field']['template'] . "-" . $width . ".tpl.php";
+
+	if(file_exists($p)){
+		$themeRegistryNode['template'] = $themeRegistryNode['template'] . "-"  . $width;		  	
+	} else {
+		// check for the next highest sizes, begining with the current width +1
+		$a = explode(", ", variable_get('default_sizes'));
+		sort($a);
+		foreach($a as $k => $checkableWidth){
+			if($checkableWidth > $width){
+				//echo $width;
+				//checkAndSet($themeRegistryNode, $checkableWidth);
+			}
+		}
+	}		
+}
+
+
 function ress_theme_registry_alter(&$theme_registry) {
+	$ressHandler = new Ress();
+	$w = $ressHandler->deviceWidth;
 	if (isset($theme_registry['field'])) {
-		$theme_registry['field']['template'] = 'field-480';    	
+		checkAndSet($theme_registry['field'], $w);
 	}
 }
 
 
 
+/**
+ * WURFL API integ
+ */
 class Ress {
 	
-	//var $wurlf;
 	var $deviceWidth;
 
 	function __construct(){
 		wurfl_boot();
-		//$this->wurlf = $wurflManager;
-		$requestingDevice = wurfl_get_requestingDevice();
-		
+		$requestingDevice = wurfl_get_requestingDevice();	
 		$this->deviceWidth = $requestingDevice->getCapability("resolution_width");
-		
-		//$this->getTheme();
 
-		//die($this->deviceWidth);
+		// for future consideration
+		//$requestingDevice->getCapability("is_wireless_device") 
+		//$requestingDevice->getCapability("mobile_browser") 
 	}
 
-
-
-	function getTheme(){
-		global $theme_key;
-		$themes = list_themes();
-		$theme_object = $themes[$theme_key];
-		// print all the object fields
-		var_dump($theme_key);
-		var_dump($theme_object);
-	}
-
+	public function __get($property) {
+	    if (property_exists($this, $property)) {
+	    	return $this->$property;
+	    }
+  	}
 }
 
-
-// initialize ressHandler
-$ressHandler = new Ress();
 
 ?>
