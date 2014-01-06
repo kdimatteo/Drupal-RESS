@@ -10,15 +10,15 @@
  * Admin Config
  */
 function ress_admin() {
- 	$form = array();
-	$form['ress_settings']['default_sizes'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Dafault sizes to check for:'),
-		'#required' => true,
-		'#description' => t('A comma separated list of sizes in px e.g., "320, 480"'),
-		'#default_value' => '320, 480, 600, 768, 900, 1100, 1300'
-	);
-	return system_settings_form($form);
+  $form = array();
+  $form['ress_settings']['default_sizes'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Dafault sizes to check for:'),
+    '#required' => true,
+    '#description' => t('A comma separated list of sizes in px e.g., "320, 480"'),
+    '#default_value' => '320, 480, 600, 768, 900, 1100, 1300'
+  );
+  return system_settings_form($form);
 }
 
 /**
@@ -41,32 +41,35 @@ function ress_menu() {
 }
 
 function checkAndSet(&$themeRegistryNode, $width){
-	
-	$p = $themeRegistryNode['path'] . '/' . $themeRegistryNode['template'] . '-' . $width . '.tpl.php';
-	//$p = $theme_registry['field']["path"] . "/" . $theme_registry['field']['template'] . "-" . $width . ".tpl.php";
+  
+  $p = $themeRegistryNode['path'] . '/' . $themeRegistryNode['template'] . '-';
+  $p .= $width . '.tpl.php';
+  //$p = $theme_registry['field']["path"] . "/" . $theme_registry['field']['template'] . "-" . $width . ".tpl.php";
 
-	if(file_exists($p)){
-		$themeRegistryNode['template'] = $themeRegistryNode['template'] . "-"  . $width;		  	
-	} else {
-		// check for the next highest sizes, begining with the current width +1
-		$a = explode(", ", variable_get('default_sizes'));
-		sort($a);
-		foreach($a as $k => $checkableWidth){
-			if($checkableWidth > $width){
-				//echo $width;
-				//checkAndSet($themeRegistryNode, $checkableWidth);
-			}
-		}
-	}		
+  if(file_exists($p)){
+    $themeRegistryNode['template'] = $themeRegistryNode['template'] . "-";
+    $themeRegistryNode['template'] .= $width;        
+  } 
+  else {
+    // check for the next highest sizes, begining with the current width +1
+    $a = explode(", ", variable_get('default_sizes'));
+    sort($a);
+    foreach($a as $k => $checkableWidth){
+      if($checkableWidth > $width){
+        //echo $width;
+        //checkAndSet($themeRegistryNode, $checkableWidth);
+      }
+    }
+  }   
 }
 
 
 function ress_theme_registry_alter(&$theme_registry) {
-	$ressHandler = new Ress();
-	$w = $ressHandler->deviceWidth;
-	if (isset($theme_registry['field'])) {
-		checkAndSet($theme_registry['field'], $w);
-	}
+  $ressHandler = new Ress();
+  $w = $ressHandler->deviceWidth;
+  if (isset($theme_registry['field'])) {
+    checkAndSet($theme_registry['field'], $w);
+  }
 }
 
 
@@ -75,24 +78,24 @@ function ress_theme_registry_alter(&$theme_registry) {
  * WURFL API integ
  */
 class Ress {
-	
-	var $deviceWidth;
+  
+  var $deviceWidth;
 
-	function __construct(){
-		wurfl_boot();
-		$requestingDevice = wurfl_get_requestingDevice();	
-		$this->deviceWidth = $requestingDevice->getCapability("resolution_width");
+  function __construct(){
+    wurfl_boot();
+    $requestingDevice = wurfl_get_requestingDevice(); 
+    $this->deviceWidth = $requestingDevice->getCapability("resolution_width");
 
-		// for future consideration
-		//$requestingDevice->getCapability("is_wireless_device") 
-		//$requestingDevice->getCapability("mobile_browser") 
-	}
+    // for future consideration
+    //$requestingDevice->getCapability("is_wireless_device") 
+    //$requestingDevice->getCapability("mobile_browser") 
+  }
 
-	public function __get($property) {
-	    if (property_exists($this, $property)) {
-	    	return $this->$property;
-	    }
-  	}
+  public function __get($property) {
+      if (property_exists($this, $property)) {
+        return $this->$property;
+      }
+    }
 }
 
 
